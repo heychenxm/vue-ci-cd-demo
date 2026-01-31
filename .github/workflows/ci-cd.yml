@@ -1,0 +1,51 @@
+# 工作流名称（GitHub 页面显示用）
+name: Vue CI/CD to GitHub Pages
+
+# 触发条件：当代码 push 到 main 分支，或手动触发时执行
+on:
+  push:
+    branches: [ main ]  # 推送到 main 分支触发
+  workflow_dispatch:    # 允许手动触发（可选，方便测试）
+
+# 定义要执行的任务
+jobs:
+  # 任务名：构建并部署
+  build-and-deploy:
+    # 运行环境：GitHub 提供的 Ubuntu 最新版虚拟服务器
+    runs-on: ubuntu-latest
+
+    # 任务步骤（按顺序执行）
+    steps:
+      # 步骤 1：拉取 GitHub 仓库的代码到虚拟服务器
+      - name: 拉取代码
+        uses: actions/checkout@v4  # 使用官方的「拉取代码」动作
+
+      # 步骤 2：安装 Node.js（前端项目必须）
+      - name: 安装 Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20  # 指定 Node 版本（和本地一致，避免兼容问题）
+          cache: 'npm'      # 缓存 npm 依赖，加速下次构建
+
+      # 步骤 3：安装项目依赖
+      - name: 安装依赖
+        run: npm install  # 执行 npm install 命令
+
+      # 步骤 4：代码检查（可选，验证代码规范）
+      - name: ESLint 代码检查
+        run: npm run lint  # 若 lint 报错，CI 流程会终止
+
+      # 步骤 5：构建项目（生成 dist 文件夹）
+      - name: 构建 Vue 项目
+        run: npm run build  # 执行打包命令
+
+      # 步骤 6：部署到 GitHub Pages
+      - name: 部署到 GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4  # 第三方部署动作（成熟稳定）
+        with:
+          # GitHub 自动生成的令牌，无需手动配置，用于权限验证
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          # 要部署的文件夹（Vue 打包后的 dist 目录）
+          publish_dir: ./dist
+          # 部署分支（GitHub Pages 默认从 gh-pages 分支读取内容）
+          publish_branch: gh-pages
