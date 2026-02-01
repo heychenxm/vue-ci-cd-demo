@@ -2,6 +2,7 @@
   <img alt="Vue logo" src="./assets/logo.png">
   <HelloWorld msg="Welcome to Your Vue.js App"/>
   <h1>THIS IS CI CD</h1>
+  <h1>update</h1>
 </template>
 
 <script>
